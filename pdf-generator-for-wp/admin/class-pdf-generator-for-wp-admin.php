@@ -59,7 +59,7 @@ class Pdf_Generator_For_Wp_Admin {
 	 */
 	public function pgfw_admin_enqueue_styles( $hook ) {
 		$screen = get_current_screen();
-		if ( isset( $screen->id ) && 'wp-swings_page_pdf_generator_for_wp_menu' == $screen->id || 'wp-swings_page_home' == $screen->id ) { // phpcs:ignore
+		if ( isset( $screen->id ) && ( 'wp-swings_page_pdf_generator_for_wp_menu' == $screen->id || 'wp-swings_page_home' == $screen->id ) ) { // phpcs:ignore
 
 			wp_enqueue_style( 'wps-pgfw-select2-css', PDF_GENERATOR_FOR_WP_DIR_URL . 'package/lib/select-2/pdf-generator-for-wp-select2.css', array(), time(), 'all' );
 
@@ -97,7 +97,7 @@ class Pdf_Generator_For_Wp_Admin {
 		wp_register_script( $this->plugin_name . 'admin-notice', plugin_dir_url( __FILE__ ) . 'src/js/pdf-generator-for-wp-notices.js', array( 'jquery' ), $this->version, false );
 		wp_localize_script( $this->plugin_name . 'admin-notice', 'wps_pgfw_notice', $wps_wgm_notice );
 		wp_enqueue_script( $this->plugin_name . 'admin-notice' );
-		if ( isset( $screen->id ) && 'wp-swings_page_pdf_generator_for_wp_menu' == $screen->id || 'wp-swings_page_home' == $screen->id ) { // phpcs:ignore
+		if ( isset( $screen->id ) && ( 'wp-swings_page_pdf_generator_for_wp_menu' == $screen->id || 'wp-swings_page_home' == $screen->id ) ) { // phpcs:ignore
 			wp_enqueue_script( 'wps-pgfw-select2', PDF_GENERATOR_FOR_WP_DIR_URL . 'package/lib/select-2/pdf-generator-for-wp-select2.js', array( 'jquery' ), time(), false );
 
 			wp_enqueue_script( 'wps-pgfw-metarial-js', PDF_GENERATOR_FOR_WP_DIR_URL . 'package/lib/material-design/material-components-web.min.js', array(), time(), false );
@@ -1948,6 +1948,7 @@ class Pdf_Generator_For_Wp_Admin {
 			$pgfw_show_type_meta_val = array_key_exists( 'pgfw_meta_fields_' . $post_type . '_show', $pgfw_meta_settings ) ? $pgfw_meta_settings[ 'pgfw_meta_fields_' . $post_type . '_show' ] : '';
 			$pgfw_show_type_meta_arr = array_key_exists( 'pgfw_meta_fields_' . $post_type . '_list', $pgfw_meta_settings ) ? $pgfw_meta_settings[ 'pgfw_meta_fields_' . $post_type . '_list' ] : array();
 			$pgfw_meta_fields_show_image_gallery = array_key_exists( 'pgfw_meta_fields_show_image_gallery', $pgfw_meta_settings ) ? $pgfw_meta_settings['pgfw_meta_fields_show_image_gallery'] : '';
+			$pgfw_meta_fields_show_unknown_image_format = array_key_exists( 'pgfw_meta_fields_show_unknown_image_format', $pgfw_meta_settings ) ? $pgfw_meta_settings['pgfw_meta_fields_show_unknown_image_format'] : '';
 			$pgfw_gallery_metafield_key = array_key_exists( 'pgfw_gallery_metafield_key', $pgfw_meta_settings ) ? $pgfw_meta_settings['pgfw_gallery_metafield_key'] : '';
 			$pgfw_meta_settings_html_arr[] =
 			array(
@@ -1983,6 +1984,17 @@ class Pdf_Generator_For_Wp_Admin {
 				'value'        => $pgfw_meta_fields_show_image_gallery,
 				'class'        => 'pgfw_meta_fields_show_image_gallery',
 				'name'         => 'pgfw_meta_fields_show_image_gallery',
+
+			);
+			$pgfw_meta_settings_html_arr[] =
+			array(
+				'title'        => __( 'Unknown Image Format Handler ', 'pdf-generator-for-wp' ),
+				'type'         => 'checkbox',
+				'description'  => __( 'If your image type is unknown or not rendering in the PDF, please enable this setting.', 'pdf-generator-for-wp' ),
+				'id'           => 'pgfw_meta_fields_show_unknown_image_format',
+				'value'        => $pgfw_meta_fields_show_unknown_image_format,
+				'class'        => 'pgfw_meta_fields_show_unknown_image_format',
+				'name'         => 'pgfw_meta_fields_show_unknown_image_format',
 
 			);
 			$pgfw_meta_settings_html_arr[] = array(
