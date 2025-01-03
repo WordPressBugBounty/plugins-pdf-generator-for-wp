@@ -15,17 +15,17 @@
  * Plugin Name:       PDF Generator For WP
  * Plugin URI:        https://wordpress.org/plugins/pdf-generator-for-wp/
  * Description:       <code><strong>PDF Generator for WordPress</strong></code> plugin allows to generate and download PDF files from WordPress sites across multiple platforms in just one click. Elevate your eCommerce store by exploring more on WP Swings.<a href="https://wpswings.com/woocommerce-plugins/?utm_source=wpswings-pdf-shop&utm_medium=pdf-org-backend&utm_campaign=shop-page" target="_blank"> Elevate your e-commerce store by exploring more on <strong> WP Swings </strong></a>
- * Version:           1.3.9
+ * Version:           1.4.0
  * Author:            WP Swings
  * Author URI:        https://wpswings.com/?utm_source=wpswings-official&utm_medium=pdf-org-backend&utm_campaign=official
  * Text Domain:       pdf-generator-for-wp
  * Domain Path:       /languages
  *
  * Requires at least:    5.5.0
- * Tested up to:         6.6.2
+ * Tested up to:         6.7.1
  * WC requires at least: 5.2.0
- * WC tested up to:      9.3.3
- * Stable tag:           1.3.9
+ * WC tested up to:      9.5.1
+ * Stable tag:           1.4.0
  * Requires PHP:         7.4
  *
  * License:           GNU General Public License v3.0
@@ -61,7 +61,7 @@ if ( isset( $plug['wordpress-pdf-generator/wordpress-pdf-generator.php'] ) ) {
  * @since 1.0.0
  */
 function define_pdf_generator_for_wp_constants() {
-	pdf_generator_for_wp_constants( 'PDF_GENERATOR_FOR_WP_VERSION', '1.3.9' );
+	pdf_generator_for_wp_constants( 'PDF_GENERATOR_FOR_WP_VERSION', '1.4.0' );
 	pdf_generator_for_wp_constants( 'PDF_GENERATOR_FOR_WP_DIR_PATH', plugin_dir_path( __FILE__ ) );
 	pdf_generator_for_wp_constants( 'PDF_GENERATOR_FOR_WP_DIR_URL', plugin_dir_url( __FILE__ ) );
 	pdf_generator_for_wp_constants( 'PDF_GENERATOR_FOR_WP_SERVER_URL', 'https://wpswings.com' );
@@ -356,11 +356,54 @@ function wps_wpg_pro_pdf_upgrade_notice( $plugin_file, $plugin_data, $status ) {
 }
 
 /**
- * Notification update. 
+ * Adding shortcode to show create pdf icon anywhere on the page.
+ */
+add_shortcode( 'WPS_SINGLE_IMAGE', 'wps_display_uploaded_image_shortcode' );
+
+/**
+ * Callback function for shortcode.
+ *
+ * @since 1.0.0
+ * @param array $atts An array of shortcode.
+ * @return string
+ */
+function wps_display_uploaded_image_shortcode( $atts ) {
+	// Set default attributes for the shortcode.
+	$atts = shortcode_atts(
+		array(
+			'id'  => '',    // Attachment ID.
+			'url' => '',    // Image URL if no ID is given.
+			'alt' => 'Image', // Alt text for accessibility.
+			'width'  => '100%', // Width of the image.
+			'height' => 'auto',  // Height of the image.
+		),
+		$atts,
+		'wps_image'
+	);
+
+	// Get image URL from attachment ID if provided.
+	if ( ! empty( $atts['id'] ) ) {
+		$image_src = wp_get_attachment_image_url( $atts['id'], 'full' );
+	} else {
+		$image_src = esc_url( $atts['url'] );
+	}
+
+	// Check if image source exists.
+	if ( empty( $image_src ) ) {
+		return '<p>No image found.</p>';
+	}
+
+	// Return the image HTML.
+	return '<img src="' . esc_url( $image_src ) . '" alt="' . esc_attr( $atts['alt'] ) . '" style="width: ' . esc_attr( $atts['width'] ) . '; height: ' . esc_attr( $atts['height'] ) . ';">';
+}
+
+
+/**
+ * Notification update.
  */
 function wps_pgfw_remove_cron_for_notification_update() {
-       wp_clear_scheduled_hook( 'wps_wgm_check_for_notification_update' );
-   }
+	   wp_clear_scheduled_hook( 'wps_wgm_check_for_notification_update' );
+}
 
 add_action( 'admin_notices', 'wps_banner_notification_plugin_html' );
 
@@ -410,7 +453,7 @@ function wps_pgfw_notification_plugin_html() {
 	if ( isset( $screen->id ) ) {
 		$pagescreen = $screen->id;
 	}
-	if ( ( isset( $_GET['page'] ) && 'pdf_generator_for_wp_menu' === $_GET['page'] )  ) {
+	if ( ( isset( $_GET['page'] ) && 'pdf_generator_for_wp_menu' === $_GET['page'] ) ) {
 		$notification_id = get_option( 'wps_wgm_notify_new_msg_id', false );
 		$banner_id = get_option( 'wps_wgm_notify_new_banner_id', false );
 		if ( isset( $banner_id ) && '' !== $banner_id ) {
