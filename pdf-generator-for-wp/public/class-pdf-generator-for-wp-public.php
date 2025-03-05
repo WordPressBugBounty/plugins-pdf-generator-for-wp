@@ -269,11 +269,11 @@ class Pdf_Generator_For_Wp_Public {
 		// Set default attributes for the shortcode.
 		$atts = shortcode_atts(
 			array(
-				'id'  => '',    // Attachment ID.
+				'id'  => $atts['id'],    // Attachment ID.
 				'url' => '',    // Image URL if no ID is given.
 				'alt' => 'Image', // Alt text for accessibility.
-				'width'  => '100%', // Width of the image.
-				'height' => 'auto',  // Height of the image.
+				'width'  => isset( $atts['width'] ) ? $atts['width'] : 10, // Width of the image.
+				'height' => isset( $atts['height'] ) ? $atts['height'] : 10,  // Height of the image.
 			),
 			$atts,
 			'wps_image'
@@ -285,14 +285,13 @@ class Pdf_Generator_For_Wp_Public {
 		} else {
 			$image_src = esc_url( $atts['url'] );
 		}
-
 		// Check if image source exists.
 		if ( empty( $image_src ) ) {
 			return '<p>No image found.</p>';
 		}
-
+		
 		// Return the image HTML.
-		return '<img src="' . esc_url( $image_src ) . '" alt="' . esc_attr( $atts['alt'] ) . '" style="width: ' . esc_attr( $atts['width'] ) . '; height: ' . esc_attr( $atts['height'] ) . ';">';
+		return '<img src="' . esc_url( $image_src ) . '" alt="' . esc_attr( $atts['alt'] ) . '" style="display:block;width: ' . esc_attr( $atts['width'] ) . '; height: ' . esc_attr( $atts['height'] ) . ';">';
 	}
 
 
@@ -308,7 +307,7 @@ class Pdf_Generator_For_Wp_Public {
 		// Set default attributes for the shortcode.
 		$atts = shortcode_atts(
 			array(
-				'product_id' => '', // Product ID (optional; defaults to current product if on a product page).
+				'product_id' => $atts['product_id'], // Product ID (optional; defaults to current product if on a product page).
 				'columns'    => 3,  // Number of columns for the grid display.
 				'size'       => 'thumbnail', // Image size: 'thumbnail', 'medium', 'large', or custom size.
 			),
@@ -317,14 +316,14 @@ class Pdf_Generator_For_Wp_Public {
 		);
 
 		// Get the product ID (fallback to current product if empty and on a product page).
-		$product_id = get_the_ID();
+		$product_id = ! empty( $atts['product_id'] ) ? $atts['product_id'] : get_the_ID();
 
 		if ( ! $product_id ) {
 			return '<p>No product found.</p>';
 		}
 
 		// Get the gallery images.
-		$product = wc_get_product( 140 );
+		$product = wc_get_product( $atts['product_id'] );
 
 		$gallery_image_ids = $product ? $product->get_gallery_image_ids() : array();
 
@@ -391,3 +390,4 @@ class Pdf_Generator_For_Wp_Public {
 		return $html;
 	}
 }
+
