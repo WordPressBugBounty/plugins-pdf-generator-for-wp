@@ -15,7 +15,7 @@
  * Plugin Name:       PDF Generator For WP
  * Plugin URI:        https://wordpress.org/plugins/pdf-generator-for-wp/
  * Description:       <code><strong>PDF Generator for WordPress</strong></code> plugin allows to generate and download PDF files from WordPress sites across multiple platforms in just one click. Elevate your eCommerce store by exploring more on WP Swings.<a href="https://wpswings.com/woocommerce-plugins/?utm_source=wpswings-pdf-shop&utm_medium=pdf-org-backend&utm_campaign=shop-page" target="_blank"> Elevate your e-commerce store by exploring more on <strong> WP Swings </strong></a>
- * Version:           1.5.4
+ * Version:           1.5.5
  * Author:            WP Swings
  * Author URI:        https://wpswings.com/?utm_source=wpswings-official&utm_medium=pdf-org-backend&utm_campaign=official
  * Text Domain:       pdf-generator-for-wp
@@ -24,8 +24,8 @@
  * Requires at least:    6.7.0
  * Tested up to:         6.8.2
  * WC requires at least: 6.5.0
- * WC tested up to:      10.0.4
- * Stable tag:           1.5.4
+ * WC tested up to:      10.1.2
+ * Stable tag:           1.5.5
  * Requires PHP:         7.4
  *
  * License:           GNU General Public License v3.0
@@ -62,7 +62,7 @@ if ( isset( $plug['wordpress-pdf-generator/wordpress-pdf-generator.php'] ) ) {
  * @since 1.0.0
  */
 function define_pdf_generator_for_wp_constants() {
-	pdf_generator_for_wp_constants( 'PDF_GENERATOR_FOR_WP_VERSION', '1.5.4' );
+	pdf_generator_for_wp_constants( 'PDF_GENERATOR_FOR_WP_VERSION', '1.5.5' );
 	pdf_generator_for_wp_constants( 'PDF_GENERATOR_FOR_WP_DIR_PATH', plugin_dir_path( __FILE__ ) );
 	pdf_generator_for_wp_constants( 'PDF_GENERATOR_FOR_WP_DIR_URL', plugin_dir_url( __FILE__ ) );
 	pdf_generator_for_wp_constants( 'PDF_GENERATOR_FOR_WP_SERVER_URL', 'https://wpswings.com' );
@@ -95,11 +95,18 @@ function pdf_generator_for_wp_constants( $key, $value ) {
 function activate_pdf_generator_for_wp( $network_wide ) {
 	require_once plugin_dir_path( __FILE__ ) . 'includes/class-pdf-generator-for-wp-activator.php';
 	Pdf_Generator_For_Wp_Activator::pdf_generator_for_wp_activate( $network_wide );
-	$wps_pgfw_active_plugin                         = get_option( 'wps_all_plugins_active', array() );
+	$wps_pgfw_active_plugin = get_option( 'wps_all_plugins_active', array() );
+	if ( ! is_array( $wps_pgfw_active_plugin ) ) {
+		// If someone stored JSON in the past, try to decode it.
+		$decoded = is_string( $wps_pgfw_active_plugin ) ? json_decode( $wps_pgfw_active_plugin, true ) : null;
+		$wps_pgfw_active_plugin = is_array( $decoded ) ? $decoded : array();
+	}
+
 	$wps_pgfw_active_plugin['pdf-generator-for-wp'] = array(
 		'plugin_name' => __( 'PDF Generator For WordPress', 'pdf-generator-for-wp' ),
 		'active'      => '1',
 	);
+
 	update_option( 'wps_all_plugins_active', $wps_pgfw_active_plugin );
 }
 
@@ -161,13 +168,12 @@ register_deactivation_hook( __FILE__, 'deactivate_pdf_generator_for_wp' );
 require plugin_dir_path( __FILE__ ) . 'includes/class-pdf-generator-for-wp.php';
 
 
-	/**
-	 * This function is used to check PAR pro plugin is active or not.
-	 *
-	 * @return bool
-	 */
+/**
+ * This function is used to check PAR pro plugin is active or not.
+ *
+ * @return bool
+ */
 function wps_pgfw_is_pdf_pro_plugin_active() {
-
 	$flag = false;
 	if ( is_plugin_active( 'wordpress-pdf-generator/wordpress-pdf-generator.php' ) ) {
 
@@ -395,7 +401,7 @@ add_action( 'admin_notices', 'wps_wpg_migrate_notice', 99 );
 /**
  * Migration to new domain notice on main dashboard notice.
  */
-function wps_wpg_migrate_notice() {     // phpcs:disable WordPress.Security.NonceVerification.Recommended
+function wps_wpg_migrate_notice() {      // phpcs:disable WordPress.Security.NonceVerification.Recommended
 	$tab = isset( $_GET['page'] ) ? sanitize_text_field( wp_unslash( $_GET['page'] ) ) : '';
 	global $pgfw_old_plugin_exists;
 
@@ -987,15 +993,15 @@ if ( ! function_exists( 'wps_banner_notification_plugin_html' ) ) {
 	 * Notification.
 	 */
 	function wps_banner_notification_plugin_html() {
-		   $screen = get_current_screen();
+		$screen = get_current_screen();
 		if ( ! $screen || empty( $screen->id ) ) {
 			return;
 		}
 
-		   $target_screens = array( 'plugins', 'dashboard', 'wp-swings_page_home' );
-		   $page_param     = isset( $_GET['page'] ) ? sanitize_text_field( wp_unslash( $_GET['page'] ) ) : '';
+		$target_screens = array( 'plugins', 'dashboard', 'wp-swings_page_home' );
+		$page_param     = isset( $_GET['page'] ) ? sanitize_text_field( wp_unslash( $_GET['page'] ) ) : '';
 
-		   // Check whether to show on specific pages or screens.
+		// Check whether to show on specific pages or screens.
 		if ( 'wc-settings' === $page_param || in_array( $screen->id, $target_screens, true ) ) {
 			$banner_id = get_option( 'wps_wgm_notify_new_banner_id', false );
 			if ( isset( $banner_id ) && '' !== $banner_id ) {

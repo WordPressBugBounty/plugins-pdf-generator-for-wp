@@ -96,7 +96,8 @@ class Pdf_Generator_For_Wp_Common {
 		$guest_access_pdf    = array_key_exists( 'pgfw_guest_access', $display_setings_arr ) ? $display_setings_arr['pgfw_guest_access'] : '';
 		if ( isset( $_GET['action'] ) ) { // phpcs:ignore
 			$prod_id = array_key_exists( 'id', $_GET ) ? sanitize_text_field( wp_unslash( $_GET['id'] ) ) : ''; // phpcs:ignore
-			if ( ( 'genpdf' === $_GET['action'] ) && ( $prod_id ) ) { // phpcs:ignore
+			$wps_post_status = get_post_status( $prod_id );
+			if ( ( 'genpdf' === $_GET['action'] ) && ( $prod_id ) && 'publish' == $wps_post_status ) { // phpcs:ignore
 				if ( ( 'yes' === $guest_access_pdf ) && ( 'yes' === $user_access_pdf ) ) {
 					$this->pgfw_generate_pdf( $prod_id );
 				} elseif ( ( 'yes' === $guest_access_pdf ) && ! is_user_logged_in() ) {
