@@ -15,17 +15,17 @@
  * Plugin Name:       PDF Generator For WP
  * Plugin URI:        https://wordpress.org/plugins/pdf-generator-for-wp/
  * Description:       <code><strong>PDF Generator for WordPress</strong></code> plugin allows to generate and download PDF files from WordPress sites across multiple platforms in just one click. Elevate your eCommerce store by exploring more on WP Swings.<a href="https://wpswings.com/woocommerce-plugins/?utm_source=wpswings-pdf-shop&utm_medium=pdf-org-backend&utm_campaign=shop-page" target="_blank"> Elevate your e-commerce store by exploring more on <strong> WP Swings </strong></a>
- * Version:           1.5.5
+ * Version:           1.5.9
  * Author:            WP Swings
  * Author URI:        https://wpswings.com/?utm_source=wpswings-official&utm_medium=pdf-org-backend&utm_campaign=official
  * Text Domain:       pdf-generator-for-wp
  * Domain Path:       /languages
  *
  * Requires at least:    6.7.0
- * Tested up to:         6.8.2
+ * Tested up to:         6.9.0
  * WC requires at least: 6.5.0
- * WC tested up to:      10.1.2
- * Stable tag:           1.5.5
+ * WC tested up to:      10.4.6
+ * Stable tag:           1.5.9
  * Requires PHP:         7.4
  *
  * License:           GNU General Public License v3.0
@@ -62,7 +62,7 @@ if ( isset( $plug['wordpress-pdf-generator/wordpress-pdf-generator.php'] ) ) {
  * @since 1.0.0
  */
 function define_pdf_generator_for_wp_constants() {
-	pdf_generator_for_wp_constants( 'PDF_GENERATOR_FOR_WP_VERSION', '1.5.5' );
+	pdf_generator_for_wp_constants( 'PDF_GENERATOR_FOR_WP_VERSION', '1.5.9' );
 	pdf_generator_for_wp_constants( 'PDF_GENERATOR_FOR_WP_DIR_PATH', plugin_dir_path( __FILE__ ) );
 	pdf_generator_for_wp_constants( 'PDF_GENERATOR_FOR_WP_DIR_URL', plugin_dir_url( __FILE__ ) );
 	pdf_generator_for_wp_constants( 'PDF_GENERATOR_FOR_WP_SERVER_URL', 'https://wpswings.com' );
@@ -212,7 +212,7 @@ function wps_register_new_widgets( $widgets_manager ) {
 	$tofw_only_widgets = array( 'wps_tracking_info' );
 
 	// Check if Pro plugin is active.
-	include_once( ABSPATH . 'wp-admin/includes/plugin.php' );
+	include_once ABSPATH . 'wp-admin/includes/plugin.php';
 	$pdf_is_pro_plugin_active = is_plugin_active( 'wordpress-pdf-generator/wordpress-pdf-generator.php' );
 	$tofw_is_pro_plugin_active = is_plugin_active( 'track-orders-for-woocommerce/track-orders-for-woocommerce.php' );
 
@@ -252,7 +252,7 @@ function wps_register_new_widgets( $widgets_manager ) {
 		$wps_widget_file = plugin_dir_path( __FILE__ ) . "Elementor/class-elementor-widget-{$wps_source}.php";
 
 		if ( file_exists( $wps_widget_file ) ) {
-			require_once( $wps_widget_file );
+			require_once $wps_widget_file;
 		}
 
 		$wps_class_name = "Elementor_Widget_{$wps_sources_class}";
@@ -343,7 +343,7 @@ if ( true === $pgfw_old_plugin_exists ) {
 	 * Check update if pro is old.
 	 */
 	function wps_wpg_check_and_inform_update() {
-		$update_file = plugin_dir_path( dirname( __FILE__ ) ) . 'wordpress-pdf-generator/class-mwb-wordpress-pdf-generator-update.php';
+		$update_file = plugin_dir_path( __DIR__ ) . 'wordpress-pdf-generator/class-mwb-wordpress-pdf-generator-update.php';
 
 		// If present but not active.
 		if ( ! is_plugin_active( 'wordpress-pdf-generator/wordpress-pdf-generator.php' ) ) {
@@ -401,7 +401,7 @@ add_action( 'admin_notices', 'wps_wpg_migrate_notice', 99 );
 /**
  * Migration to new domain notice on main dashboard notice.
  */
-function wps_wpg_migrate_notice() {      // phpcs:disable WordPress.Security.NonceVerification.Recommended
+function wps_wpg_migrate_notice() {       // phpcs:disable WordPress.Security.NonceVerification.Recommended
 	$tab = isset( $_GET['page'] ) ? sanitize_text_field( wp_unslash( $_GET['page'] ) ) : '';
 	global $pgfw_old_plugin_exists;
 
@@ -1027,6 +1027,87 @@ if ( ! function_exists( 'wps_banner_notification_plugin_html' ) ) {
 		}
 	}
 }
+
+add_action( 'init', 'wps_register_flipbook_post_type' );
+add_action( 'init', 'wps_pgfw_register_flipbook_taxonomy' );
+
+/**
+ * Register Flipbook Post Type.
+ */
+function wps_register_flipbook_post_type() {
+	$general_settings_data = get_option( 'pgfw_general_settings_save', array() );
+	$pgfw_flipbook_enable = array_key_exists( 'pgfw_flipbook_enable', $general_settings_data ) ? $general_settings_data['pgfw_flipbook_enable'] : '';
+
+	$args = array(
+		'labels'             => array(
+			'name'               => __( 'Flipbooks', 'wps-flipbook' ),
+			'singular_name'      => __( 'Flipbook', 'wps-flipbook' ),
+			'menu_name'          => __( 'Flipbooks', 'wps-flipbook' ),
+		),
+		'public'             => false,
+		'show_ui'            => ( 'yes' === $pgfw_flipbook_enable ),
+		'show_in_menu'       => ( 'yes' === $pgfw_flipbook_enable ),
+		'menu_icon'          => 'dashicons-book-alt',
+		'supports'           => array( 'title' ),
+		'capability_type'    => 'post',
+		'has_archive'        => false,
+		'rewrite'            => false,
+		'query_var'          => true,
+	);
+
+	register_post_type( 'flipbook', $args );
+}
+
+/**
+ * Register Flipbook Taxonomy.
+ */
+function wps_pgfw_register_flipbook_taxonomy() {
+	$general_settings_data = get_option( 'pgfw_general_settings_save', array() );
+	$pgfw_flipbook_enable = array_key_exists( 'pgfw_flipbook_enable', $general_settings_data ) ? $general_settings_data['pgfw_flipbook_enable'] : '';
+
+	if ( 'yes' === $pgfw_flipbook_enable ) {
+		register_taxonomy(
+			'flipbook_category',
+			'flipbook',
+			array(
+				'label' => 'Flipbook Categories',
+				'hierarchical' => true,
+				'show_ui' => true,
+				'show_admin_column' => true,
+				'rewrite' => array( 'slug' => 'flipbook-category' ),
+			)
+		);
+	}
+}
+add_action( 'wp_ajax_upload_pdf_page_image', 'upload_pdf_page_image' );
+add_action( 'wp_ajax_nopriv_upload_pdf_page_image', 'upload_pdf_page_image' );
+/**
+ * Handle PDF page image upload via AJAX.
+ */
+function upload_pdf_page_image() {
+	$nonce = isset( $_POST['nonce'] ) ? sanitize_text_field( wp_unslash( $_POST['nonce'] ) ) : '';
+	if ( ! wp_verify_nonce( $nonce, 'fb_fetch_pdf' ) ) {
+		status_header( 403 );
+		echo 'Invalid nonce';
+		exit;
+	}
+	if ( empty( $_FILES['file'] ) ) {
+		wp_send_json_error( array( 'message' => 'No file uploaded' ) );
+	}
+
+	require_once ABSPATH . 'wp-admin/includes/file.php';
+	// phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized, WordPress.Security.ValidatedSanitizedInput.MissingUnslash
+	$uploadedfile = $_FILES['file'];
+
+	$movefile = wp_handle_upload( $uploadedfile, array( 'test_form' => false ) );
+
+	if ( $movefile && ! isset( $movefile['error'] ) ) {
+		wp_send_json_success( array( 'url' => $movefile['url'] ) );
+	} else {
+		wp_send_json_error( array( 'message' => $movefile['error'] ?? 'Upload failed' ) );
+	}
+}
+
 
 add_action( 'admin_notices', 'wps_pgfw_notification_plugin_html' );
 /**
