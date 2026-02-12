@@ -77,7 +77,7 @@ class Pdf_Generator_For_Wp {
 			$this->version = PDF_GENERATOR_FOR_WP_VERSION;
 		} else {
 
-			$this->version = '1.5.3';
+			$this->version = '1.6.0';
 		}
 
 		$this->plugin_name = 'pdf-generator-for-wp';
@@ -267,6 +267,9 @@ class Pdf_Generator_For_Wp {
 			if ( 'yes' === $pgfw_enable_plugin ) {
 				// adding shortcodes to fetch all order detials [ISFW_FETCH_ORDER].
 				$this->loader->add_action( 'plugins_loaded', $pgfw_plugin_common, 'wpg_fetch_order_details_shortcode' );
+				// Custom template mapping.
+				$this->loader->add_filter( 'pgfw_load_templates_for_pdf_html', $pgfw_plugin_common, 'wpg_load_custom_template_for_pdf_generation', 10, 3 );
+				$this->loader->add_action( 'wp_ajax_wpg_save_template_items', $pgfw_plugin_common, 'wpg_save_template_items_callbck' );
 				$this->loader->add_action( 'wpg_reset_invoice_number_hook', $pgfw_plugin_common, 'wpg_reset_invoice_number' );
 			}
 		}
@@ -513,11 +516,19 @@ class Pdf_Generator_For_Wp {
 		$pgfw_file_path = apply_filters( 'wps_pgfw_setting_page_loading_filter_hook', $pgfw_file_path, $path );
 		if ( file_exists( $pgfw_file_path ) ) {
 			include $pgfw_file_path;
-		} else {
-			/* translators: %s: file path */
-			$pgfw_notice = sprintf( esc_html__( 'Unable to locate file at location "%s". Some features may not work properly in this plugin. Please contact us!', 'pdf-generator-for-wp' ), $pgfw_file_path );
-			$this->wps_pgfw_plug_admin_notice( $pgfw_notice, 'error' );
+			return;
 		}
+
+		$pgfw_fallback_path = $this->wps_pgfw_maybe_get_fallback_template_path( $path );
+
+		if ( ! empty( $pgfw_fallback_path ) && file_exists( $pgfw_fallback_path ) ) {
+			include $pgfw_fallback_path;
+			return;
+		}
+
+		/* translators: %s: file path */
+		$pgfw_notice = sprintf( esc_html__( 'Unable to locate file at location "%s". Some features may not work properly in this plugin. Please contact us!', 'pdf-generator-for-wp' ), ( ! empty( $pgfw_fallback_path ) ? $pgfw_fallback_path : $pgfw_file_path ) );
+		$this->wps_pgfw_plug_admin_notice( $pgfw_notice, 'error' );
 	}
 	/**
 	 * Locate and load appropriate tempate.
@@ -531,12 +542,43 @@ class Pdf_Generator_For_Wp {
 		$pgfw_file_path = apply_filters( 'wps_pgfw_setting_sub_page_loading_filter_hook', $pgfw_file_path, $path );
 		if ( file_exists( $pgfw_file_path ) ) {
 			include $pgfw_file_path;
-		} else {
-
-			/* translators: %s: file path */
-			$pgfw_notice = sprintf( esc_html__( 'Unable to locate file at location %s. Some features may not work properly in this plugin. Please contact us!', 'pdf-generator-for-wp' ), $pgfw_file_path );
-			$this->wps_pgfw_plug_admin_notice( $pgfw_notice, 'error' );
+			return;
 		}
+
+		$pgfw_fallback_path = $this->wps_pgfw_maybe_get_fallback_template_path( $path );
+
+		if ( ! empty( $pgfw_fallback_path ) && file_exists( $pgfw_fallback_path ) ) {
+			include $pgfw_fallback_path;
+			return;
+		}
+
+		/* translators: %s: file path */
+		$pgfw_notice = sprintf( esc_html__( 'Unable to locate file at location %s. Some features may not work properly in this plugin. Please contact us!', 'pdf-generator-for-wp' ), ( ! empty( $pgfw_fallback_path ) ? $pgfw_fallback_path : $pgfw_file_path ) );
+		$this->wps_pgfw_plug_admin_notice( $pgfw_notice, 'error' );
+	}
+
+	/**
+	 * Provide fallback template path when pro slugs are requested but pro plugin is inactive.
+	 *
+	 * @since 1.0.0
+	 * @param string $relative_path Template path relative to plugin root.
+	 * @return string Fallback absolute path or empty string when none.
+	 */
+	private function wps_pgfw_maybe_get_fallback_template_path( $relative_path ) {
+		$pgfw_fallback_path = '';
+
+		if ( false === strpos( $relative_path, 'wordpress-pdf-generator-' ) ) {
+			return $pgfw_fallback_path;
+		}
+
+		if ( function_exists( 'is_plugin_active' ) && is_plugin_active( 'wordpress-pdf-generator/wordpress-pdf-generator.php' ) ) {
+			return $pgfw_fallback_path;
+		}
+
+		$fallback_relative_path = str_replace( 'wordpress-pdf-generator-', 'pdf-generator-for-wp-', $relative_path );
+		$pgfw_fallback_path     = PDF_GENERATOR_FOR_WP_DIR_PATH . $fallback_relative_path;
+
+		return $pgfw_fallback_path;
 	}
 
 	/**
