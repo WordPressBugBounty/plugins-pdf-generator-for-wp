@@ -3,10 +3,10 @@ Contributors: wpswings
 Donate link: https://wpswings.com/
 Tags: PDF, invoices, 3d flipbook, PDF generator, pdf flipbook, WordPress PDF generator
 Requires at least: 6.7.0
-Tested up to: 7.1.2
+Tested up to: 7.1
 WC requires at least: 6.5.0
-WC tested up to: 11.1.2
-Stable tag: 1.6.5
+WC tested up to: 11.3.0
+Stable tag: 1.6.6
 Requires PHP: 7.4
 License: GPLv3 or later 
 License URI: http://www.gnu.org/licenses/gpl-3.0.html
@@ -260,6 +260,10 @@ Visit here [**WP Swings Plugin Knowledge Base**](https://support.wpswings.com/wo
 
 == Changelog ==
 
+= 1.6.6 - Released on 17 Nov 2026 =
+* Enhancement : Security hardening – improved visibility checks for front-end PDF generation, so PDFs are generated only for posts the visitor is allowed to view.
+* New : Compatibility With Latest WP (7.1) and WC (11.3.0)
+
 = 1.6.5 - Released on 01 Oct 2026 =
 * New : PDF password protection – global password, per post type (Post / Page / Product), per category & tag, and per-item override via a metabox.
 * New : Cloud storage – auto-upload generated PDFs to the admin's Google Drive and Dropbox (OAuth connect/disconnect).
@@ -503,11 +507,6 @@ Visit here [**WP Swings Plugin Knowledge Base**](https://support.wpswings.com/wo
 
 == Upgrade Notice ==
 
-= 1.6.5 - Released on 01 Oct 2026 =
-* New : PDF password protection – global password, per post type (Post / Page / Product), per category & tag, and per-item override via a metabox.
-* New : Cloud storage – auto-upload generated PDFs to the admin's Google Drive and Dropbox (OAuth connect/disconnect).
-* New : "Save to Google Drive" and "Save to Dropbox" buttons let visitors save a PDF to their own account.
-* New : Drag & drop PDF Builder – text, image, meta field and rectangle blocks, multi-page layouts, page background, watermark and 12 ready-made templates for posts, pages and products.
-* New : Automatic PDF regeneration – cached on-server PDFs are rebuilt when a post is saved, plus a weekly background refresh.
-* Enhancement : Security – PDF generation and email endpoints now check the visitor can view the post (drafts, private, password-protected and non-public post types).
-* Enhancement : Settings page redesign with locally bundled Poppins font.
+= 1.6.6 - Released on 17 Nov 2026 =
+* Enhancement : Security hardening – improved visibility checks for front-end PDF generation, so PDFs are generated only for posts the visitor is allowed to view.
+* New : Compatibility With Latest WP (7.1.4) and WC (11.3.0)
